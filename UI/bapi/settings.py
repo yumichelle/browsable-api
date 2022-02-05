@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-# importing module
+import os
 
 import sys
 # appending a path
@@ -26,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%az6xx#a*c!s!gj)7m5_befjiq*3d49wajqprlm_nnl&5!ez)d'
+BAPI_SECRET_KEY = os.environ["BAPI_SECRET_KEY"]
+SECRET_KEY = BAPI_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

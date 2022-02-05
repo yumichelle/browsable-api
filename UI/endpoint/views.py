@@ -61,6 +61,10 @@ class StudentList(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # way 2
 
+    def delete(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class StudentDetail(APIView):
 # class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
