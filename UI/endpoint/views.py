@@ -12,7 +12,6 @@ from .serializers import *
 
 from modeldir.api import API
 
-# data_api = API(input, outout)
 
 class StudentList(generics.GenericAPIView):
 # class StudentList(generics.ListCreateAPIView):
@@ -38,6 +37,7 @@ class StudentList(generics.GenericAPIView):
         dict(request.data)['photo'] or request.FILES['myfile']?
         [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>] 
         InMemoryUploadedFile is a wrapper around a file object. 
+        request.data.dict() -> {'first_name': 'mn', 'last_name': 'mn', 'grade': 'A', 'age': '4', 'photo': <InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>}
 
 
         (Student.objects.filter(pk=pk).values()) 
@@ -53,18 +53,16 @@ class StudentList(generics.GenericAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            file = dict(request.data)['photo']
-            # open file to turn into df:
-            open_file(request.FILES['photo'])
-            # print(type(data), '\n', data)
-            
+            # file = dict(request.data)['photo']
+            # # open file to turn into df:
+            # open_file(request.FILES['photo'])
+            # # print(type(data), '\n', data)
+
+            print(serializer.data['pk'])
+            open_file(dict(request.data), serializer.data['pk'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # way 2
 
-    def delete(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        snippet.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class StudentDetail(APIView):
 # class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -74,6 +72,10 @@ class StudentDetail(APIView):
     def get(self, request, pk, *args, **kwargs):
         open_file(dict(request.data), pk)
         return Response(Student.objects.filter(pk=pk).values(), status=status.HTTP_200_OK)
+    
+    def delete(self, request, pk, format=None):
+        # https://stackoverflow.com/questions/9143262/delete-multiple-objects-in-django
+        return Response(Student.objects.filter(pk=pk).delete(), status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -97,15 +99,25 @@ def get_medical(request):
     return Response(Medical.objects.all().values(), status=status.HTTP_200_OK)
 
 
-import io
+
 import csv
 import pandas as pd
 def open_file(file, pk):
 
     print (Student.objects.filter(pk=pk).values()) # <QuerySet [{'id': 5, 'first_name': 'm', 'last_name': 'n', 'age': 3, 'grade': 'C', 'photo': 'uploads/data_ssqQyEb.csv'}]>
     file_in_memory = Student.objects.filter(pk=pk).values()
-    file_object = file_in_memory[0]['photo'] # gets csv
+    file_object = file_in_memory[0]['file'] # gets csv
     print(file_object)
+    if file_object.endswith(".csv"):
+        print("use api.py")
+        # input = pd.read_csv(file_object)
+        input = file_object
 
-    df = pd.read_csv(file_object)
-    print (df)
+        # output = "./modeldir/output"
+        output = '../modeldir/output/'
+        
+        data_api = API(input, output)
+        data_api.main()
+
+    else: 
+        print("this isn't a csv file")

@@ -6,7 +6,8 @@ from .models import *
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ('first_name', 'last_name', 'grade', 'age', 'photo')
+        # read_only_fields = ('pk', 'first_name', 'last_name', 'grade', 'age')
+        fields = ('pk', 'first_name', 'last_name', 'grade', 'age', 'file')
 
 class MedicalSerializer(serializers.ModelSerializer):
     class Meta:
