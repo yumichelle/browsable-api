@@ -14,4 +14,4 @@
 [![forthebadge](https://forthebadge.com/images/badges/ctrl-c-ctrl-v.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/powered-by-black-magic.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/powered-by-overtime.svg)](https://forthebadge.com)
-<img alt="PHP" src="https://img.shields.io/badge/django-%23777BB4.svg?&style=for-the-badge&logo=django&logoColor=white"/>
+<img alt="django" src="https://img.shields.io/badge/django-%23777BB4.svg?&style=for-the-badge&logo=django&logoColor=white"/>
