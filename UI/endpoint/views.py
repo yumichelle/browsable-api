@@ -10,75 +10,69 @@ from rest_framework.decorators import api_view
 from .models import *
 from .serializers import *
 
-from modeldir.api import API
+from ModelDir.api import API
 
 
-class StudentList(generics.GenericAPIView):
-# class StudentList(generics.ListCreateAPIView):
+class StudentList(generics.ListCreateAPIView):
+    """ StudentList shows all records in Student database when at path, /studentlist. """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
     def get(self, request):
+        """
+        Return all records in Student database by default when at path, /studentlist.
+
+        :param self: <class 'endpoint.views.StudentList'>
+        :param request: {}
+        :return: returns all records in Student database.
+        """
         return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
 
     def put(self, request):
-        '''
-        (type(request.data))
-        <class 'django.http.request.QueryDict'>
+        """
+        A PUT request to submit a record in Student database. A request to the API is called.
 
-        (request) 
-        <rest_framework.request.Request: PUT '/app/studentlist'>
-
-        (request.data)
-        <QueryDict: {'first_name': ['b'], 'last_name': ['m'], 
-        'grade': ['A'], 'age': ['1'], 
-        'photo': [<InMemoryUploadedFile: s-l640.jpg (image/jpeg)>]}>
-
-        dict(request.data)['photo'] or request.FILES['myfile']?
-        [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>] 
-        InMemoryUploadedFile is a wrapper around a file object. 
-        request.data.dict() -> {'first_name': 'mn', 'last_name': 'mn', 'grade': 'A', 'age': '4', 'photo': <InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>}
-
-
-        (Student.objects.filter(pk=pk).values()) 
-        <QuerySet [{'id': 5, 'first_name': 'm', 'last_name': 'n', 'age': 3, 'grade': 'C', 'photo': 'uploads/data_ssqQyEb.csv'}]>
-   
-
-        file_in_memory = Student.objects.filter(pk=pk).values()
-        file_object = file_in_memory[0]['photo'] # gets csv
-        uploads/data_ssqQyEb.csv
-
-        '''
+        :param self: <class 'endpoint.views.StudentList'>
+        :param request: a QueryDict, a dictionary, with values from the PUT request.
+        :return: returns the record added in Student database if StudentSerializer is valid.
+        """
         serializer = StudentSerializer(data=request.data)
-
         if serializer.is_valid():
             serializer.save()
-            # file = dict(request.data)['photo']
-            # # open file to turn into df:
-            # open_file(request.FILES['photo'])
-            # # print(type(data), '\n', data)
-
-            print(serializer.data['pk'])
-            open_file(dict(request.data), serializer.data['pk'])
+            # print ('StudentList PUT', dict(request.data)) #  {'first_name': ['b'], 'last_name': ['m'], 'grade': ['A'], 'age': [''], 'file': [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>]}
+            open_file(serializer.data['pk'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # way 2
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
-class StudentDetail(APIView):
-# class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
+class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
+    """ StudentDetail shows a specific record in Student database when at path, /<int:pk>. """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
     def get(self, request, pk, *args, **kwargs):
-        open_file(dict(request.data), pk)
+        """
+        Done by default. A request to the API is called.
+
+        :param self: <class 'endpoint.views.StudentDetail'>
+        :param request: {}
+        :param pk: primary key based on path, /<int:pk>.
+        :return: returns a specific record in Student database.
+        """
+        open_file(pk)
         return Response(Student.objects.filter(pk=pk).values(), status=status.HTTP_200_OK)
     
     def delete(self, request, pk, format=None):
+        """
+        Delete record at path, /<int:pk>.
+
+        :param self: <class 'endpoint.views.StudentDetail'>
+        :param request: {}
+        :param pk: primary key based on path, /<int:pk>.
+        :return: returns a specific record in Student database.
+        """
         # https://stackoverflow.com/questions/9143262/delete-multiple-objects-in-django
         return Response(Student.objects.filter(pk=pk).delete(), status=status.HTTP_204_NO_CONTENT)
-
-
-
 
 
 
@@ -100,22 +94,27 @@ def get_medical(request):
 
 
 
-import csv
-import pandas as pd
-def open_file(file, pk):
 
-    print (Student.objects.filter(pk=pk).values()) # <QuerySet [{'id': 5, 'first_name': 'm', 'last_name': 'n', 'age': 3, 'grade': 'C', 'photo': 'uploads/data_ssqQyEb.csv'}]>
+def open_file(pk):
+    """
+    Makes the call to the API, api.py.
+
+    :param requestData: {} <- when called from StudentDetail GET.
+                        {'first_name': ['b'], 'last_name': ['m'], 'grade': ['A'], 'age': [''], 'file': [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>]} <- when called from StudentList PUT.
+    :param pk: primary key based on path, /<int:pk>.
+    """
+    # get the QuerySet object if the pk matches the pk argument:
     file_in_memory = Student.objects.filter(pk=pk).values()
-    file_object = file_in_memory[0]['file'] # gets csv
-    print(file_object)
-    if file_object.endswith(".csv"):
-        print("use api.py")
-        # input = pd.read_csv(file_object)
-        input = file_object
+    # gets csv:
+    file_object = file_in_memory[0]['file']
+    print('open_file() has', file_object)
 
-        # output = "./modeldir/output"
+    # if the file is a csv:
+    if file_object.endswith(".csv"):
+        print("using api.py")
+        input = file_object
         output = '../modeldir/output/'
-        
+        # make the API instance and pass in the input and output. Call main() in api.py: 
         data_api = API(input, output)
         data_api.main()
 
