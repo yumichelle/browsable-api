@@ -2,21 +2,24 @@ from django.shortcuts import render
 
 # Create your views here.
 # <app>/views.py
-from rest_framework import generics, status
+from rest_framework import generics, parsers, renderers, serializers, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+# from rest_framework.views import APIView
+from rest_framework.decorators import action, api_view
 
 from .models import *
 from .serializers import *
 
 from ModelDir.api import API
-
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class StudentList(generics.ListCreateAPIView):
     """ StudentList shows all records in Student database when at path, /studentlist. """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.FileUploadParser)
 
     def get(self, request):
         """
@@ -40,6 +43,14 @@ class StudentList(generics.ListCreateAPIView):
         if serializer.is_valid():
             serializer.save()
             # print ('StudentList PUT', dict(request.data)) #  {'first_name': ['b'], 'last_name': ['m'], 'grade': ['A'], 'age': [''], 'file': [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>]}
+            open_file(serializer.data['pk'])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    
+    def post(self, request):
+        serializer = StudentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             open_file(serializer.data['pk'])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
