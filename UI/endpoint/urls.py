@@ -22,13 +22,15 @@ schema_view = get_schema_view(
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+
+
 # endpoints:
 urlpatterns = [
     # # path("<endpoint aka route>", views.<name of class>.as_view()),
     path('/studentlist', StudentList.as_view()),
-    path('/<int:pk>', StudentDetail.as_view()),
-    path('/save_medical', save_medical, name='save_contact'),
-    path('/get_medical', get_medical, name='get_contact'),
+    path('/studentlist/<int:pk>', StudentDetail.as_view(), name='details'),
+   #  path('/save_medical', save_medical, name='save_contact'),
+   #  path('/get_medical', get_medical, name='get_contact'),
 
    #  re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
    #  # ^ A JSON view of your API specification at /swagger.json
