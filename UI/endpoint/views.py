@@ -2,10 +2,11 @@ from django.shortcuts import render
 
 # Create your views here.
 # <app>/views.py
-from rest_framework import generics, parsers, renderers, serializers, status
+from rest_framework import generics, parsers, renderers, serializers, status, viewsets
 from rest_framework.response import Response
-# from rest_framework.views import APIView
+from rest_framework.views import APIView
 from rest_framework.decorators import action, api_view
+from django.shortcuts import get_object_or_404
 
 from .models import *
 from .serializers import *
@@ -14,12 +15,14 @@ from ModelDir.api import API
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.FileUploadParser)
+
 class StudentList(generics.ListCreateAPIView):
     """ StudentList shows all records in Student database when at path, /studentlist. """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
-    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.FileUploadParser)
+    # parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.FileUploadParser)
 
     def get(self, request):
         """
@@ -31,22 +34,33 @@ class StudentList(generics.ListCreateAPIView):
         """
         return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
 
-    def put(self, request):
+    
+    def put(self, request, *args, **kwargs):
         """
-        A PUT request to submit a record in Student database. A request to the API is called.
+        A PUT request to update a record in Student database. A request to the API is called.
 
         :param self: <class 'endpoint.views.StudentList'>
         :param request: a QueryDict, a dictionary, with values from the PUT request.
         :return: returns the record added in Student database if StudentSerializer is valid.
         """
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            # print ('StudentList PUT', dict(request.data)) #  {'first_name': ['b'], 'last_name': ['m'], 'grade': ['A'], 'age': [''], 'file': [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>]}
-            open_file(serializer.data['pk'])
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
-    
+        pk = self.kwargs.get('pk')
+        try:
+            snippet = Student.objects.get(pk=pk)
+            serializer = StudentSerializer(snippet, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                open_file(serializer.data['pk'])
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Student.DoesNotExist:
+            serializer = StudentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                open_file(serializer.data['pk'])
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+        
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
@@ -63,6 +77,7 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get(self, request, pk, *args, **kwargs):
         """
+        gets a specific record:
         Done by default. A request to the API is called.
 
         :param self: <class 'endpoint.views.StudentDetail'>
@@ -85,6 +100,35 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
         # https://stackoverflow.com/questions/9143262/delete-multiple-objects-in-django
         return Response(Student.objects.filter(pk=pk).delete(), status=status.HTTP_204_NO_CONTENT)
 
+    def put(self, request, pk, *args, **kwargs):
+        # t = get_object_or_404(Student, 'age') 
+        # print(request.data) # <QueryDict: {'first_name': ['b'], 'last_name': [''], 'grade': [''], 'age': [''], 'file': [<InMemoryUploadedFile: data.csv (application/vnd.ms-excel)>]}>
+        # print(Student.objects.filter(pk=pk).values()) # <QuerySet [{'id': 3, 'first_name': 'm', 'last_name': 'mm', 'age': 10, 'grade': 'C', 'file': 'uploads/s-l640_TezSuBq.jpg'}]>
+
+        # oldrec=StudentList.objects.filter(pk=self.kwargs.get('pk'))
+        # t.value = 999  # change field
+        # t.save() # this will update only
+
+        # oldrec = (Student.objects.filter(pk=pk).values())
+        oldrec= StudentSerializer.data['pk']
+        newrec = dict(request.POST)
+        oldrec[0]['first_name'] = request.POST['first_name']
+        # oldrec[0]['last_name'] = request.POST['last_name']
+        # oldrec[0]['grade'] = request.POST['grade']
+        # oldrec[0]['age'] = request.POST['age']
+        # oldrec[0]['file'] = request.POST['file']
+        
+        # Student.objects.filter(pk=pk).update(first_name= request.POST['first_name'])
+
+        # print(newrec)
+
+        # print(oldrec[0]['file'])
+        # serializer = StudentSerializer()
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     # open_file(serializer.data['pk'])
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
 @api_view(['POST'])

@@ -45,8 +45,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles', # required for serving swagger ui's css/js files
     'rest_framework',
     'endpoint.apps.EndpointConfig',
-    'drf_yasg',
+    # 'drf_yasg',
+    'drf_spectacular',
 ]
+
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    # OTHER SETTINGS
+    'COMPONENT_SPLIT_REQUEST': True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
