@@ -1,5 +1,5 @@
 # <app>/urls.py
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 
 from endpoint.views import *
 from rest_framework import permissions
@@ -27,8 +27,9 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 # endpoints:
 urlpatterns = [
     # # path("<endpoint aka route>", views.<name of class>.as_view()),
-    path('/studentlist', StudentList.as_view()),
-    path('/studentlist/<int:pk>', StudentDetail.as_view(), name='details'),
+    path('studentlist', StudentList.as_view()),
+    path('studentlist/<int:pk>', StudentDetail.as_view(), name='details'),
+
    #  path('/save_medical', save_medical, name='save_contact'),
    #  path('/get_medical', get_medical, name='get_contact'),
 
@@ -38,11 +39,15 @@ urlpatterns = [
    #  path('/swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
    #  path('/redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
    
-   path('/api/schema/', SpectacularAPIView.as_view(), name='schema'),
+   path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
    # Optional UI:
-   path('/api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-   path('/api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-
-
+   path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+   path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+   # path('api/schema/swagger-ui/test/', read_file, name='test')
+   # path('/users/', UserList.as_view()),
+   # path('/users/<int:pk>/', UserDetail.as_view()),
 ]
 
+urlpatterns += [
+    path('api-auth/', include('rest_framework.urls')),
+]

@@ -6,7 +6,8 @@ from rest_framework import generics, parsers, renderers, serializers, status, vi
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action, api_view
-from django.shortcuts import get_object_or_404
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
@@ -25,6 +26,8 @@ class StudentList(generics.ListCreateAPIView):
     """ StudentList shows all records in Student database when at path, /studentlist. """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
@@ -33,8 +36,8 @@ class StudentList(generics.ListCreateAPIView):
         :param request: {}
         :return: returns all records in Student database.
         """
-        return Response('success')
-        # return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
+        # return Response('success')
+        return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
 
     
     # def put(self, request, *args, **kwargs):
@@ -65,15 +68,25 @@ class StudentList(generics.ListCreateAPIView):
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
+            content = { # {'user': 'admin', 'auth': 'None'}
+                'user': str(request.user),  # `django.contrib.auth.User` instance. 
+                'auth': str(request.auth),  # None
+            }
+            user = request.user
+            profile = None
+            # try:
+            #     profile = user.StudentList
+            # except Student.DoesNotExist:
+            #     profile = Student.objects.create(user, ...)
+            print(content, '\n')
             serializer.save()
             open_file(serializer.data['pk'])
-            # pk = self.kwargs.get('pk')
-            expense = Student.objects.get(pk=serializer.data['pk'])
-            return HttpResponseRedirect( reverse_lazy('details', args = (expense.pk,) ) )
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
-            # return HttpResponseRedirect( reverse('details', args=(self.kwargs.get('pk'))) )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # def perform_create(self, serializer):
+    #     #  associating the user that created the snippet with the snippet instance. 
+    #     serializer.save(owner=self.request.user)
 
 class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
     """ StudentDetail shows a specific record in Student database when at path, /<int:pk>. """
@@ -132,6 +145,15 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
 #     return Response(Medical.objects.all().values(), status=status.HTTP_200_OK)
 
 
+# class UserList(generics.ListAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+
+# class UserDetail(generics.RetrieveAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
 
 
 def open_file(pk):
@@ -159,3 +181,12 @@ def open_file(pk):
 
     else: 
         print("this isn't a csv file")
+
+import os
+from django.http import HttpResponseRedirect, Http404, FileResponse
+from django.http import HttpResponse
+
+def read_file(request):
+    # filepath = os.path.join('', 'Resume_for_Internship.pdf')
+    # return FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+    return FileResponse(open('file_example_XLS_10.xls', 'rb'), content_type='application/vnd.ms-excel')

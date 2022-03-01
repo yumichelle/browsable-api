@@ -18,7 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from django.views.generic import RedirectView
+from endpoint import views
 urlpatterns = [
-    path('app', include('endpoint.urls')), # appends app/endpoint_path
-    # path('admin/', admin.site.urls),
+    path('app/', include('endpoint.urls')), # appends app/endpoint_path
+    path('admin/', admin.site.urls),
+    path('guide/', views.read_file, name='guide')
 ]

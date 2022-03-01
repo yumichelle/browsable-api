@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 
+import json
 import sys
 # appending a path
 sys.path.append('..')
@@ -52,14 +53,25 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
 }
+
+def myFunc():
+    content = {open("UI/Resume_for_Internship.pdf").read(), 'Your project description <a href="UI/Resume_for_Internship.pdf">file</a>'}
+    return content
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Your Project API',
-    'DESCRIPTION': 'Your project description',
+    'DESCRIPTION':  '[/my/guide](/guide)',
     'VERSION': '1.0.0',
     # OTHER SETTINGS
     'COMPONENT_SPLIT_REQUEST': True,
 }
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -99,6 +111,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # 'USER': 'admin',
+        # 'PASSWORD': 'pass12345',
+        # 'HOST': '127.0.0.1',
+        # 'PORT': '5432',
     }
 }
 
