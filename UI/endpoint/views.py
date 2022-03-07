@@ -2,23 +2,15 @@ from django.shortcuts import render
 
 # Create your views here.
 # <app>/views.py
-from rest_framework import generics, parsers, renderers, serializers, status, viewsets
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import action, api_view
-from django.shortcuts import get_object_or_404
 
 from .models import *
 from .serializers import *
 
 from ModelDir.api import API
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 
-# parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.FileUploadParser)
-from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import RedirectView
 from django.http import HttpResponseRedirect
 
 class StudentList(generics.ListCreateAPIView):
@@ -33,45 +25,40 @@ class StudentList(generics.ListCreateAPIView):
         :param request: {}
         :return: returns all records in Student database.
         """
-        return Response('success')
-        # return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
+        return Response(StudentList.queryset.values(), status=status.HTTP_200_OK)
 
     
-    # def put(self, request, *args, **kwargs):
-    #     """
-    #     A PUT request to update a record in Student database. A request to the API is called.
-    #     :param self: <class 'endpoint.views.StudentList'>
-    #     :param request: a QueryDict, a dictionary, with values from the PUT request.
-    #     :return: returns the record added in Student database if StudentSerializer is valid.
-    #     """
-    #     pk = self.kwargs.get('pk')
-    #     try:
-    #         snippet = Student.objects.get(pk=pk)
-    #         serializer = StudentSerializer(snippet, data=request.data)
-    #         if serializer.is_valid():
-    #             serializer.save()
-    #             open_file(serializer.data['pk'])
-    #             return Response(serializer.data)
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #     except Student.DoesNotExist:
-    #         serializer = StudentSerializer(data=request.data)
-    #         if serializer.is_valid():
-    #             serializer.save()
-    #             open_file(serializer.data['pk'])
-    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    def put(self, request, *args, **kwargs):
+        """
+        A PUT request to update a record in Student database. A request to the API is called.
+        :param self: <class 'endpoint.views.StudentList'>
+        :param request: a QueryDict, a dictionary, with values from the PUT request.
+        :return: returns the record added in Student database if StudentSerializer is valid.
+        """
+        pk = self.kwargs.get('pk')
+        try:
+            snippet = Student.objects.get(pk=pk)
+            serializer = StudentSerializer(snippet, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                open_file(serializer.data['pk'])
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Student.DoesNotExist:
+            serializer = StudentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                open_file(serializer.data['pk'])
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
-        
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             open_file(serializer.data['pk'])
-            # pk = self.kwargs.get('pk')
             expense = Student.objects.get(pk=serializer.data['pk'])
             return HttpResponseRedirect( reverse_lazy('details', args = (expense.pk,) ) )
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
-            # return HttpResponseRedirect( reverse('details', args=(self.kwargs.get('pk'))) )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
@@ -113,23 +100,6 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
             open_file(pk)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# @api_view(['POST'])
-# def save_medical(request):
-#     name = request.POST.get('name')
-#     bloodgroup = request.POST.get('bloodgroup')
-
-#     try:
-#         Medical.objects.create(name= name, bloodgroup = bloodgroup)
-#         return Response("Data Saved!", status=status.HTTP_201_CREATED)
-
-#     except Exception as ex:
-#         return Response(ex, status=status.HTTP_400_BAD_REQUEST)
-
-# @api_view(['GET'])
-# def get_medical(request):
-#     return Response(Medical.objects.all().values(), status=status.HTTP_200_OK)
 
 
 

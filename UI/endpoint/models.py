@@ -2,7 +2,6 @@ from django.db import models
 
 # Create your models here.
 # <app>/models.py -> ex. api/models.py
-from django import forms
 
 Grade_CHOICES = [
     ('A', ('A')),
@@ -18,7 +17,3 @@ class Student(models.Model):
     file = models.FileField(blank=False, upload_to='uploads/', )
     # photo = models.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), upload_to='uploads/', )
 
-
-class Medical(models.Model):
-    name = models.CharField(max_length=22)
-    bloodgroup = models.CharField(max_length=22)
